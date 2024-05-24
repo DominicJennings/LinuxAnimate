@@ -1,4 +1,4 @@
-<title>Your Videos On GoAnimate</title>
+<title>Your Characters On GoAnimate</title>
 <body>
 	<header>
 		<div>
@@ -7,9 +7,9 @@
 				<span>VERSIÖN</span>
 			</div>
 			<div>
-				<a class="button_small" onclick="document.getElementById('file').click()">UPLOAD A MOVIE</a>
+				<a class="button_small" onclick="document.getElementById('file').click()">UPLOAD A CHARACTER</a>
 				<a class="button_small" href="starters.html">YOUR STARTERS</a>
-				<a class="button_small" href="characters.html">YOUR CHARACTERS</a>
+				<a class="button_small" href="movies.html">YOUR VIDEOS</a>
 				<div class="char_dropdown button_small">
 					<div>CREATE A CHARACTER</div>
 					<menu>
@@ -58,7 +58,7 @@
 		<thead>
 			<tr>
 				<td></td>
-				<td>Video Title</td>
+				<td>Char Title</td>
 				<td>Last Modified</td>
 				<td></td>
 			</tr>
@@ -70,7 +70,7 @@
 			</tr>
 		</tfoot>
 	</table>
-	<form enctype='multipart/form-data' action='/upload_movie' method='post'>
+	<form enctype='multipart/form-data' action='/upload_character' method='post'>
 		<input id='file' type="file" onchange="this.form.submit()" name='import' accept=".xml" />
 	</form>
 	<script>
@@ -78,7 +78,7 @@
 		var tbody = document.getElementsByTagName('tbody')[0];
 		var loadMore = document.getElementById('load_more');
 		const listReq = new XMLHttpRequest();
-		listReq.open('GET', '/movieList');
+		listReq.open('GET', '/charList');
 		listReq.send();
 
 		var C = 0;
@@ -93,7 +93,7 @@
 				const tbl = json[c];
 				const date = tbl.date.substr(0, 10) + ' ' + tbl.date.substr(11);
 				tbody.insertAdjacentHTML('beforeend',
-					'<tr id="' + tbl.id + '"><td><img src="/movie_thumbs/' + tbl.id + '.png"></td><td><div>' + tbl.title.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") + '</div><div>' + tbl.durationString + '</div></div></td><td><span>' + date + '</span></td><td><a href="javascript:;" onclick="popup(\'' + tbl.id + '\')"></a><a href="/go_full?movieId=' + tbl.id + '"></a><a href="/movies/' + tbl.id + '.xml" download="' + tbl.title + '"></a><a href="javascript:deleteMovie(\'' + tbl.id + '\')"></a></td></tr>');
+					'<tr id="' + tbl.id + '"><td><img src="/char_thumbs/' + tbl.id + '.png"></td><td><div>Char #' + tbl.id + '</div><div>Char Id: ' + tbl.id + '</div><div>Theme ID: ' + tbl.tId + '</div></td><td><span>' + date + '</span></td><td><a href="/characters/' + tbl.id + '.xml" download="Char #' + tbl.id + '"></a><a href="javascript:deleteChar(\'' + tbl.id + '\')"></a></td></tr>');
 			}
 		}
 
@@ -103,14 +103,9 @@
 			json = JSON.parse(listReq.responseText);
 			loadRows();
 		}
-
-		function popup(id) {
-			window.open('/player?movieId=' + id, 'MsgWindow', 'width=1280,height=723,left=' + (screen.width / 2 - 640) + ',top=' + (screen.height / 2 - 360));
-		}
-		
-		function deleteMovie(id) {
+		function deleteChar(id) {
 			const xhttp = new XMLHttpRequest();
-		        xhttp.open('POST', `/ajax/deleteMovie/?movieId=${id}`);
+		        xhttp.open('POST', `/ajax/deleteChar/?movieId=${id}`);
 		        xhttp.send();
                         document.getElementById(`${id}`).style.display = "none";
 		}
@@ -405,18 +400,10 @@
 		}
 
 		tr>:nth-child(4)>:nth-child(1)::before {
-			content: '\E174';
-		}
-
-		tr>:nth-child(4)>:nth-child(2)::before {
-			content: '\E235';
-		}
-
-		tr>:nth-child(4)>:nth-child(3)::before {
 			content: '\E182';
 		}
 		
-		tr>:nth-child(4)>:nth-child(4)::before {
+		tr>:nth-child(4)>:nth-child(2)::before {
 			content: '\E017';
 		}
 
