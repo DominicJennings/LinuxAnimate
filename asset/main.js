@@ -5,44 +5,39 @@ const caché = require("./caché");
 
 module.exports = {
 
-	load(ut, aId) {
-		return caché.load(ut, aId);
+	load(mId, aId) {
+		return caché.load(mId, aId);
 	},
-	delete(ut, aId) {
-		return caché.delete(ut, aId);
+	delete(mId, aId) {
+		return caché.delete(mId, aId);
 	},
-	save(buffer, ut, mode, ext) {
-		var suffix, ed;
+	save(buffer, mId, mode, ext) {
+		var suffix;
                 switch (mode) { 
-			case "prop": { 
-				suffix = `-${mode}.${ext}`;
-				return caché.newProp(buffer, ut, "", suffix); 
-                                break;
-                        }
-			case "wtr": { 
-				suffix = `-${mode}.${ext}`;
-				return caché.newWatermark(buffer, ut, "", suffix, ext); 
-                                break;
-                        }
-			case "video": { 
-                                suffix = `-${mode}.${ext}`;
-                                if (mode == "dontimport") {
-                                        console.log;
-                                } else {
-                                        return caché.newVideo(buffer, ut, "", suffix); 
-                                }
-                                break;
-			}
-			default: {
-                                suffix = `-${mode}.${ext}`;
-                                return caché.newItem(buffer, ut, "", suffix);
-                                break;
-                        }
+                         case "prop": { 
+                                 suffix = `-${mode}.${ext}`;
+                                 return caché.newProp(buffer, mId, "", suffix); 
+                                 break;
+                         }
+                         case "video": { 
+                                 suffix = `-${mode}.${ext}`;
+                                 if (mode == "dontimport") {
+                                         console.log;
+                                 } else {
+                                         return caché.newVideo(buffer, mId, "", suffix); 
+                                 }
+                                 break;
+                         }
+                         default: {
+                                 suffix = `-${mode}.${ext}`;
+                                 return caché.newItem(buffer, mId, "", suffix);
+                                 break;
+                         }
                 }
 	},
-	list(ut, mode) {
+	list(mId, mode) {
 		var ret = [];
-		var files = caché.list(ut);
+		var files = caché.list(mId);
 		files.forEach((aId) => {
 			var dot = aId.lastIndexOf(".");
 			var dash = aId.lastIndexOf("-");
@@ -62,10 +57,6 @@ module.exports = {
 					var fMode = 'sound';
 					var subtype = 'soundeffect';
 					break;
-				case 'tts':
-					var fMode = 'sound';
-					var subtype = 'tts';
-					break;
 			}
 			if (fMode == mode) {
 				if (fMode == 'sound') {
@@ -76,8 +67,8 @@ module.exports = {
 			}
 
 			return new Promise(function (resolve, reject) {
-				console.log(`/${process.env.CACHÉ_FOLDER}/${ut}.${aId}`);
-				mp3Duration(`/${process.env.CACHÉ_FOLDER}/${ut}.${aId}`, (e, d) => {
+				console.log(`${process.env.CACHÉ_FOLDER}/${mId}.${aId}`);
+				mp3Duration(`${process.env.CACHÉ_FOLDER}/${mId}.${aId}`, (e, d) => {
 					var dur = d * 1e3;
 					console.log(dur);
 					var dot = aId.lastIndexOf(".");
@@ -100,9 +91,10 @@ module.exports = {
 	});
 		return ret;
 	},
-	listAll(ut) {
+
+	listAll(mId) {
 		var ret = [];
-		var files = caché.list(ut);
+		var files = caché.list(mId);
 		files.forEach((aId) => {
 			var dot = aId.lastIndexOf(".");
 			var dash = aId.lastIndexOf("-");

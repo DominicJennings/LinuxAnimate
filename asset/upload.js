@@ -14,25 +14,27 @@ module.exports = function (req, res, url) {
 	if (req.method != "POST") return;
 	switch (url.pathname) {
 		case "/upload_asset":
-			try {
-				formidable().parse(req, (_, fields, files) => {
-					var [mId, mode, ext] = fields.params.split(".");
-					switch (mode) {
-						case "vo": mode = "voiceover";
-						case "se": mode = "soundeffect";
-						case "mu": mode = "music";
-					}
+			formidable().parse(req, (_, fields, files) => {
+				var [mId, mode, ext] = fields.params.split(".");
+				switch (mode) {
+					case "vo":
+						mode = "voiceover";
+						break;
+					case "se":
+						mode = "soundeffect";
+						break;
+					case "mu":
+						mode = "music";
+						break;
+				}
 
-					var path = files.import.path;
-					var buffer = fs.readFileSync(path);
-					asset.save(buffer, mId, mode, ext);
-					fs.unlinkSync(path);
-					delete buffer;
-					res.end();
-				});
-			} catch (e) {
-				console.log("Error:", e);
-			}
+				var path = files.import.path;
+				var buffer = fs.readFileSync(path);
+				asset.save(buffer, mId, mode, ext);
+				fs.unlinkSync(path);
+				delete buffer;
+				res.end();
+			});
 			return true;
 	}
 };

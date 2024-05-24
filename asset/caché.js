@@ -45,16 +45,16 @@ module.exports = {
 	},
 	/**
 	 *
-	 * @summary Saves a buffer in ut caché with a given ID.
-	 * @param {string} ut
+	 * @summary Saves a buffer in movie caché with a given ID.
+	 * @param {string} mId
 	 * @param {string} aId
 	 * @param {Buffer} buffer
 	 */
-	save(ut, aId, buffer) {
+	save(mId, aId, buffer) {
 		if (!this.validAssetId(aId)) return;
-		localCaché[ut] = localCaché[ut] || [];
-		var stored = localCaché[ut];
-		const path = `${cachéFolder}/${ut}.${aId}`;
+		localCaché[mId] = localCaché[mId] || [];
+		var stored = localCaché[mId];
+		const path = `${cachéFolder}/${mId}.${aId}`;
 
 		if (!stored.includes(aId)) stored.push(aId);
 		if (fs.existsSync(path)) size -= fs.statSync(path).size;
@@ -62,17 +62,17 @@ module.exports = {
 		size += buffer.size;
 		return buffer;
 	},
-	/**
+    /**
 	 *
 	 * @summary Saves a buffer in the props folder with a given ID.
-	 * @param {string} ut
+	 * @param {string} mId
 	 * @param {string} aId
 	 * @param {Buffer} buffer
 	 */
-	saveProp(ut, aId, buffer) {
+	saveProp(mId, aId, buffer) {
 		if (!this.validAssetId(aId)) return;
-		localCaché[ut] = localCaché[ut] || [];
-		var stored = localCaché[ut];
+		localCaché[mId] = localCaché[mId] || [];
+		var stored = localCaché[mId];
 		const path = `${propsFolder}/${aId}`;
 
 		if (!stored.includes(aId)) stored.push(aId);
@@ -83,48 +83,27 @@ module.exports = {
 	},
 	/**
 	 *
-	 * @summary Saves a buffer in the props folder with a given ID.
-	 * @param {string} mId
-	 * @param {string} aId
-	 * @param {Buffer} buffer
-	 */
-	saveWatermark(ut, aId, buffer, ext) {
-		if (!this.validAssetId(aId)) return;
-		localCaché[ut] = localCaché[ut] || [];
-		var stored = localCaché[ut];
-		const path = process.env.WATERMARKS_FOLDER + `/${aId}`;
-		const newPath = process.env.WATERMARKS_FOLDER + `/${aId.slice(0, -13)}-wtr.${ext}`;
-
-		if (!stored.includes(aId)) stored.push(aId);
-		if (fs.existsSync(path)) size -= fs.statSync(path).size;
-		fs.writeFileSync(path, buffer);
-		fs.renameSync(path, newPath);
-		size += buffer.size;
-		return buffer;
-	},
-	/**
-	 *
 	 * @summary Saves a given dictionary of buffers to caché.
-	 * @param {string} ut
+	 * @param {string} mId
 	 * @param {{[aId:string]:Buffer}} buffers
 	 * @returns {{[aId:string]:Buffer}}
 	 */
-	saveTable(ut, buffers = {}) {
+	saveTable(mId, buffers = {}) {
 		for (const aId in buffers) {
-			this.save(ut, aId, buffers[aId]);
+			this.save(mId, aId, buffers[aId]);
 		}
 		return buffers;
 	},
 	/**
 	 *
 	 * @summary Retrieves an array of buffers from a given video's caché.
-	 * @param {string} ut
+	 * @param {string} mId
 	 * @returns {{[aId:string]:Buffer}}
 	 */
-	loadTable(ut) {
+	loadTable(mId) {
 		const buffers = {};
-		this.list(ut).forEach((aId) => {
-			buffers[aId] = fs.readFileSync(`${cachéFolder}/${ut}.${aId}`);
+		this.list(mId).forEach((aId) => {
+			buffers[aId] = fs.readFileSync(`${cachéFolder}/${mId}.${aId}`);
 		});
 		return buffers;
 	},
@@ -134,41 +113,25 @@ module.exports = {
 	 * @param {string} mId
 	 * @returns {cTableType}
 	 */
-	list(ut) {
-		return localCaché[ut] || [];
+	list(mId) {
+		return localCaché[mId] || [];
 	},
 	/**
 	 *
 	 * @summary Allocates a new video-wide ID for a given buffer in the caché.
 	 * @param {Buffer} buffer
-	 * @param {string} ut
+	 * @param {string} mId
 	 * @param {string} prefix
 	 * @param {string} suffix
 	 */
-	newItem(buffer, ut, prefix = "", suffix = "") {
-		localCaché[ut] = localCaché[ut] || [];
-		var stored = localCaché[ut];
+	newItem(buffer, mId, prefix = "", suffix = "") {
+		localCaché[mId] = localCaché[mId] || [];
+		var stored = localCaché[mId];
 		var aId = this.generateId(prefix, suffix, stored);
-		this.save(ut, aId, buffer);
+		this.save(mId, aId, buffer);
 		return aId;
 	},
-	/**
-	 *
-	 * @summary Generates a new id for the props so that the fs module can read it later.
-	 * @param {Buffer} buffer
-	 * @param {string} ut
-	 * @param {string} prefix
-	 * @param {string} suffix
-	 */
-	newProp(buffer, ut, prefix = "", suffix = "") {
-		localCaché[ut] = localCaché[ut] || [];
-		var stored = localCaché[ut];
-		var aId = this.generateId(prefix, suffix, stored);
-		this.saveProp(ut, aId, buffer);
-		this.save(ut, aId, buffer);
-		return aId;
-	},
-	/**
+    /**
 	 *
 	 * @summary Generates a new id for the props so that the fs module can read it later.
 	 * @param {Buffer} buffer
@@ -176,12 +139,12 @@ module.exports = {
 	 * @param {string} prefix
 	 * @param {string} suffix
 	 */
-	newWatermark(buffer, ut, prefix = "", suffix = "", ext) {
-		localCaché[ut] = localCaché[ut] || [];
-		var stored = localCaché[ut];
+	newProp(buffer, mId, prefix = "", suffix = "") {
+		localCaché[mId] = localCaché[mId] || [];
+		var stored = localCaché[mId];
 		var aId = this.generateId(prefix, suffix, stored);
-		this.saveWatermark(ut, aId, buffer, ext);
-		this.save(ut, aId, buffer);
+		this.saveProp(mId, aId, buffer);
+		this.save(mId, aId, buffer);
 		return aId;
 	},
 	/**
@@ -190,12 +153,12 @@ module.exports = {
 	 * @param {string} aId
 	 * @returns {Buffer}
 	 */
-	load(ut, aId) {
+	load(mId, aId) {
 		if (!this.validAssetId(aId)) return;
-		const stored = localCaché[ut];
+		const stored = localCaché[mId];
 		if (!stored) return null;
 
-		const path = `${cachéFolder}/${ut}.${aId}`;
+		const path = `${cachéFolder}/${mId}.${aId}`;
 		stored.time = new Date();
 		if (stored.includes(aId)) {
 			return fs.readFileSync(path);
@@ -207,13 +170,13 @@ module.exports = {
 	 * @param {boolean} setToEmpty
 	 * @returns {void}
 	 */
-	delete(ut, aId) {
-		const stored = localCaché[ut];
+	delete(mId, aId) {
+		const stored = localCaché[mId];
 		if (!stored) return;
-		var path = `${cachéFolder}/${ut}.${aId}`;
+		var path = `${cachéFolder}/${mId}.${aId}`;
 		size -= fs.statSync(path).size;
 		fs.unlinkSync(path);
-		delete localCaché[ut];
+		delete localCaché[mId];
 	},
 	/**
 	 *
@@ -237,17 +200,17 @@ module.exports = {
 	 * @param {boolean} setToEmpty
 	 * @returns {void}
 	 */
-	clearTable(ut, setToEmpty = true) {
-		const stored = localCaché[ut];
+	clearTable(mId, setToEmpty = true) {
+		const stored = localCaché[mId];
 		if (!stored) return;
 		stored.forEach((aId) => {
 			if (aId != "time") {
-				var path = `${cachéFolder}/${ut}.${aId}`;
+				var path = `${cachéFolder}/${mId}.${aId}`;
 				size -= fs.statSync(path).size;
 				fs.unlinkSync(path);
 			}
 		});
-		if (setToEmpty) localCaché[ut] = [];
-		else delete localCaché[ut];
+		if (setToEmpty) localCaché[mId] = [];
+		else delete localCaché[mId];
 	},
 };

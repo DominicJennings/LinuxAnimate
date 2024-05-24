@@ -2,13 +2,14 @@ const loadPost = require("../misc/post_body");
 const header = process.env.XML_HEADER;
 const fUtil = require("../misc/file");
 const nodezip = require("node-zip");
-const starter = require("../starter/main");
+const movie = require("../movie/main");
 const base = Buffer.alloc(1, 0);
 const asset = require("./main");
 const http = require("http");
 const fs = require("fs");
 
 async function listAssets(data, makeZip) {
+	var mId = data.movieId;
 	var xmlString, files;
 	switch (data.type) {
 		case "char": {
@@ -22,34 +23,34 @@ async function listAssets(data, makeZip) {
 			break;
 		}
 		case "bg": {
-			files = asset.list(data.ut, "bg");
+			files = asset.list(mId, "bg");
 			xmlString = `${header}<ugc more="0">${files
 				.map((v) => `<background subtype="0" id="${v.id}" name="${v.name}" enable="Y"/>`)
 				.join("")}</ugc>`;
 			break;
 		}
 		case "sound": {
-			files = asset.list(data.ut, "sound");
+			files = asset.list(mId, "sound");
 			xmlString = `${header}<ugc more="0">${files
 				.map((v) =>`<sound subtype="${v.subtype}" id="${v.id}" name="${v.name}" enable="Y" duration="${v.duration}" downloadtype="progressive"/>`)
 				.join("")}</ugc>`;
 			break;
 		}
 		case "movie": {
-			files = starter.list();
+			files = movie.listStarters();
 			xmlString = `${header}<ugc more="0">${files
 				.map(
 					(v) =>
-						`<movie id="${v.id}" enc_asset_id="${v.id}" path="/_SAVED/${v.id}" numScene="1" title="Untitled" thumbnail="/starter_thumbs/${v.id}"><tags></tags></movie>`
+						`<movie id="${v.id}" enc_asset_id="${v.id}" path="/_SAVED/${v.id}" numScene="1" title="Untitled" thumbnail_url="/starter_thumbs/${v.id}.png"><tags></tags></movie>`
 				)
 				.join("")}</ugc>`;
 			break;
 		}
 		case "prop": {
-			files = asset.list(data.ut, "prop");
+			files = asset.list(mId, "prop");
 			xmlString = `${header}<ugc more="0">${files
 				.map(
-				        (v) =>
+					(v) =>
 						`<prop subtype="0" id="${v.id}" name="${v.name}" enable="Y" holdable="0" headable="0" placeable="1" facing="left" width="0" height="0" asset_url="${process.env.PROPS_FOLDER}/${v.id}"/>`
 				)
 				.join("")}</ugc>`;
@@ -63,7 +64,7 @@ async function listAssets(data, makeZip) {
 	
 	switch (data.subtype) {
 		case "video": {
-			files = asset.list(data.ut, "video");
+			files = asset.list(mId, "video");
 			xmlString = `${header}<ugc more="0">${files
 				.map(
 					(v) =>
@@ -76,22 +77,19 @@ async function listAssets(data, makeZip) {
 
 	if (makeZip) {
 		const zip = nodezip.create();
-		const files = asset.listAll(data.ut);
 		fUtil.addToZip(zip, "desc.xml", Buffer.from(xmlString));
 
 		files.forEach((file) => {
 			switch (file.mode) {
 				case "bg":
 				case "movie": 
-				case "effect":
 				case "sound": {
-					const buffer = asset.load(data.ut, file.id);
+					const buffer = asset.load(mId, file.id);
 					fUtil.addToZip(zip, `${file.mode}/${file.id}`, buffer);
 					break;
 				}
 				case "prop": {
-					const buffer = fs.readFileSync(`${process.env.PROPS_FOLDER}/${file.id}`);
-					fUtil.addToZip(zip, `${file.mode}/${file.id}`, buffer);
+					fUtil.addToZip(zip, `${file.mode}/${file.id}`, fs.readFileSync(`${process.env.PROPS_FOLDER}/${file.id}`));
 					break;
 				}
 			}
@@ -128,17 +126,19 @@ module.exports = function (req, res, url) {
 					const type = makeZip ? "application/zip" : "text/xml";
 					res.setHeader("Content-Type", type);
 					res.end(buff);
-				}).catch(e => console.log("Error:", e));
+				});
 				return true;
 			} else return;
 		}
 		case "POST": {
-			loadPost(req, res).then(([data]) => listAssets(data, makeZip)).then((buff) => {
-				const type = makeZip ? "application/zip" : "text/xml";
-				res.setHeader("Content-Type", type);
-				if (makeZip) res.write(base);
-				res.end(buff);
-			}).catch(e => console.log("Error:", e));
+			loadPost(req, res)
+				.then(([data]) => listAssets(data, makeZip))
+				.then((buff) => {
+					const type = makeZip ? "application/zip" : "text/xml";
+					res.setHeader("Content-Type", type);
+					if (makeZip) res.write(base);
+					res.end(buff);
+				});
 			return true;
 		}
 		default:
