@@ -1,4 +1,5 @@
-const movie = require("./main");
+const movie = require("../movie/main");
+const starter = require("./main");
 const http = require("http");
 
 /**
@@ -8,7 +9,7 @@ const http = require("http");
  * @returns {boolean}
  */
 module.exports = function (req, res, url) {
-	if (req.method != "GET" || url.pathname != "/movieList") return;
-	Promise.all(movie.list().map(movie.meta)).then((a) => res.end(JSON.stringify(a)));
+	if (req.method != "GET" || url.pathname != "/starterList") return;
+	Promise.all(movie.list('starter').map(starter.meta)).then((a) => res.end(JSON.stringify(a)));
 	return true;
 };

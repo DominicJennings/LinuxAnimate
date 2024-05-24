@@ -12,26 +12,18 @@ const fs = require("fs");
  */
 module.exports = function (req, res, url) {
 	if (req.method != "POST" || url.path != "/upload_starter") return;
-	try {
-		new formidable.IncomingForm().parse(req, (e, f, files) => {
-			if (!files.import) return;
-			var path = files.import.path;
-			var buffer = fs.readFileSync(path);
-			const numId = fUtil.generateId();
-			switch (req.headers.host) {
-				case "localhost": 
-				case `localhost:${process.env.SERVER_PORT}`: {
-					parse.unpackStarterXml(buffer, `${numId}`);
-					break;
-				}
-			}
-			fs.unlinkSync(path);
-			res.statusCode = 302;
-			res.setHeader("Location", "/");
-			res.end();
-		});
-		return true;
-	} catch (e) {
-		console.log("Error:", e);
-	}
+	new formidable.IncomingForm().parse(req, (e, f, files) => {
+		if (!files.import) return;
+		var path = files.import.path;
+		var buffer = fs.readFileSync(path);
+		var numId = fUtil.getNextFileId("starter-", ".xml");
+		parse.unpackXml(buffer, `s-${numId}`);
+		fs.unlinkSync(path);
+
+		res.statusCode = 302;
+		var url = `/html/list/starters.html`;
+		res.setHeader("Location", url);
+		res.end();
+	});
+	return true;
 };

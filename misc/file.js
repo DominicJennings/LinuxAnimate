@@ -27,7 +27,7 @@ module.exports = {
 	 * @param {number} l
 	 * @returns {string}
 	 */
-	 getNextFile(s, suf = ".xml", l = 7) {
+	getNextFile(s, suf = ".xml", l = 7) {
 		const regex = new RegExp(`${s}[0-9]*${suf}$`);
 		const dir = fs.readdirSync(folder).filter((v) => v && regex.test(v));
 		return `${folder}/${s}${this.padZero(dir.length, l)}${suf}`;
@@ -110,10 +110,6 @@ module.exports = {
 		const regex = new RegExp(`${s}[0-9]{${l}}${suf}$`);
 		const list = fs.readdirSync(folder).filter((v) => v && regex.test(v));
 		return list.length ? Number.parseInt(list.pop().substr(s.length, l)) : -1;
-	},
-	// Generates a random movie id without using a prefix.
-	generateId() {
-		return Math.floor(000000000000 + Math.random() * 999999999999);
 	},
 	/**
 	 *

@@ -15,17 +15,16 @@ module.exports = function (req, res, url) {
 	if (req.method != "POST") return;
 	switch (url.pathname) {
 		case "/goapi/saveMovie/": {
-			loadPost(req, res).then(([data]) => {
+			loadPost(req, res).then(([data, mId]) => {
 				const trigAutosave = data.is_triggered_by_autosave;
-				if (trigAutosave && !data.movieId || trigAutosave && data.copyable == "true") {
+				if (trigAutosave && !data.movieId ) {
 					thumb = fs.readFileSync(process.env.THUMB_BASE_URL + "/285747869.jpg");
 				} else {
 					thumb = data.thumbnail_large && Buffer.from(data.thumbnail_large, "base64");
 				}
 
 				var body = Buffer.from(data.body_zip, "base64");
-				movie.save(body, thumb, data.movieId).then((nId) => res.end("0" + nId)).catch(e => console.log("Error:", e));
-				 
+				movie.save(body, thumb, mId, data.presaveId).then((nId) => res.end("0" + nId));
 			});
 			return true;
 		}
@@ -33,7 +32,7 @@ module.exports = function (req, res, url) {
 			loadPost(req, res).then(([data]) => {
 				thumb = data.thumbnail_large && Buffer.from(data.thumbnail_large, "base64");
 				var body = Buffer.from(data.body_zip, "base64");
-				starter.save(body, thumb).then((nId) => res.end("0" + nId)).catch(e => console.log("Error:", e));
+				starter.save(body, thumb).then((nId) => res.end("0" + nId));
 			});
 			return true;
 		}

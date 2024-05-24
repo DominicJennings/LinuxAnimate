@@ -1,7 +1,4 @@
 var themeFolder = process.env.THEME_FOLDER;
-const { SAVED_FOLDER, STARTERS_FOLDER } = process.env;
-const folder = SAVED_FOLDER;
-const starters = STARTERS_FOLDER;
 var mp3Duration = require("mp3-duration");
 var char = require("../character/main");
 var ttsInfo = require("../tts/info");
@@ -26,6 +23,8 @@ function name2Font(font) {
 			return "FontFileTokyo";
 		case "Accidental Presidency":
 			return "FontFileAccidental";
+		case "BodoniXT":
+			return "FontFileBodoniXT";
 		case "Budmo Jiggler":
 			return "FontFileBJiggler";
 		case "Budmo Jigglish":
@@ -38,23 +37,97 @@ function name2Font(font) {
 			return "FontFileHoney";
 		case "I hate Comic Sans":
 			return "FontFileIHate";
+		case "Impact Label":
+			return "FontFileImpactLabel";
 		case "loco tv":
 			return "FontFileLocotv";
 		case "Mail Ray Stuff":
 			return "FontFileMailRay";
-		case "Mia\'s Scribblings ~":
+		case "Mia's Scribblings ~":
 			return "FontFileMia";
+		case "Shanghai":
+			return "FontFileShanghai";
+		case "Comic Book":
+			return "FontFileComicBook";
+		case "Wood Stamp":
+			return "FontFileWoodStamp";
+		case "Brawler":
+			return "FontFileBrawler";
 		case "Coming Soon":
 			return "FontFileCSoon";
+		case "Glegoo":
+			return "FontFileGlegoo";
 		case "Lilita One":
 			return "FontFileLOne";
 		case "Telex Regular":
 			return "FontFileTelex";
+		case "Claire Hand":
+			return "FontFileClaireHand";
+		case "Oswald":
+			return "FontFileOswald";
+		case "Poiret One":
+			return "FontFilePoiretOne";
+		case "Raleway":
+			return "FontFileRaleway";
+		case "Bangers":
+			return "FontFileBangers";
+		case "Creepster":
+			return "FontFileCreepster";
+		case "BlackoutMidnight":
+			return "FontFileBlackoutMidnight";
+		case "BlackoutSunrise":
+			return "FontFileBlackoutSunrise";
+		case "Junction":
+			return "FontFileJunction";
+		case "LeagueGothic":
+			return "FontFileLeagueGothic";
+		case "LeagueSpartan":
+			return "FontFileLeagueSpartan";
+		case "OstrichSansMedium":
+			return "FontFileOstrichSansMedium";
+		case "Prociono":
+			return "FontFileProciono";
+		case "Lato":
+			return "FontFileLato";
+		case "Alegreya Sans SC":
+			return "FontFileAlegreyaSansSC";
+		case "Barrio":
+			return "FontFileBarrio";
+		case "Bungee Inline":
+			return "FontFileBungeeInline";
+		case "Bungee Shade":
+			return "FontFileBungeeShade";
+		case "Gochi Hand":
+			return "FontFileGochiHand";
+		case "IM Fell English SC":
+			return "FontFileIMFellEnglishSC";
+		case "Josefin":
+			return "FontFileJosefin";
+		case "Kaushan":
+			return "FontFileKaushan";
+		case "Lobster":
+			return "FontFileLobster";
+		case "Montserrat":
+			return "FontFileMontserrat";
+		case "Mouse Memoirs":
+			return "FontFileMouseMemoirs";
+		case "Patrick Hand":
+			return "FontFilePatrickHand";
+		case "Permanent Marker":
+			return "FontFilePermanentMarker";
+		case "Satisfy":
+			return "FontFileSatisfy";
+		case "Sriracha":
+			return "FontFileSriracha";
+		case "Teko":
+			return "FontFileTeko";
+		case "Vidaloka":
+			return "FontFileVidaloka";
 		case "":
 		case null:
-			return '';
+			return "";
 		default:
-			return `FontFile${font.replace(/\s/g, '')}`;
+			return `FontFile${font}`;
 	}
 }
 
@@ -477,21 +550,40 @@ module.exports = {
 	 * @param {mId} mId
 	 */
 	async unpackXml(xml, mId) {
-		var beg = xml.lastIndexOf("<thumb>");
-		var end = xml.lastIndexOf("</thumb>");
-		if (beg > -1 && end > -1) {
-			var sub = Buffer.from(xml.subarray(beg + 7, end).toString(), "base64");
-			fs.writeFileSync(`${folder}/${mId}.png`, sub);
+		var i = mId.indexOf("-");
+		var prefix = mId.substr(0, i);
+		var suffix = mId.substr(i + 1);
+		switch (prefix) { 
+			case "m": {
+				var beg = xml.lastIndexOf("<thumb>");
+				var end = xml.lastIndexOf("</thumb>");
+				if (beg > -1 && end > -1) {
+					var sub = Buffer.from(xml.subarray(beg + 7, end).toString(), "base64");
+					fs.writeFileSync(fUtil.getFileIndex("thumb-", ".png", suffix), sub);
+				}
+				fs.writeFileSync(fUtil.getFileIndex("movie-", ".xml", suffix), xml);
+				break;
+			}
+			case "s": {
+				var beg = xml.lastIndexOf("<thumb>");
+				var end = xml.lastIndexOf("</thumb>");
+				if (beg > -1 && end > -1) {
+					var sub = Buffer.from(xml.subarray(beg + 7, end).toString(), "base64");
+					fs.writeFileSync(fUtil.getFileIndex("starter-", ".png", suffix), sub);
+				}
+				fs.writeFileSync(fUtil.getFileIndex("starter-", ".xml", suffix), xml);
+				break;
+			}
+			case "c": {
+				var folder = process.env.SAVED_FOLDER;
+				var origFile = process.env.THUMB_BASE_URL + "/char-0000000.png";
+				var newFile = fUtil.getFileIndex("char-", ".png", suffix);
+				fs.copyFile(origFile, newFile, (err) => {
+					if (err) console.log(err);
+				});
+				fs.writeFileSync(fUtil.getFileIndex("char-", ".xml", suffix), xml);
+				break;
+			}
 		}
-		fs.writeFileSync(`${folder}/${mId}.xml`, xml);
-	},
-	async unpackStarterXml(xml, mId) {
-		var beg = xml.lastIndexOf("<thumb>");
-		var end = xml.lastIndexOf("</thumb>");
-		if (beg > -1 && end > -1) {
-			var sub = Buffer.from(xml.subarray(beg + 7, end).toString(), "base64");
-			fs.writeFileSync(`${starters}/${mId}.png`, sub);
-		}
-		fs.writeFileSync(`${starters}/${mId}.xml`, xml);
 	},
 };
