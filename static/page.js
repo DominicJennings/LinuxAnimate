@@ -150,7 +150,7 @@ module.exports = function (req, res, url) {
 					isWide: 1,
 					collab: 0,
 					movieLid: 10,
-			    has_asset_char: "1",
+			    has_asset_char: "0",
 					nextUrl: "/html/list/movies.html",
 					tutorial: 1,
 				},
